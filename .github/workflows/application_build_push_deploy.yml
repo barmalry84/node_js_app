@@ -34,6 +34,7 @@ jobs:
 
   build_application_and_push_to_ECR_deploy_via_terraform:
     if: github.ref == 'refs/heads/main'
+    needs: running_tests
     runs-on: ubuntu-latest
     name: Build, Push and Deploy
     steps:
