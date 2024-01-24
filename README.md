@@ -39,7 +39,7 @@ Workflow will run some TF checks and create basic application infrastructure. Mo
 
 ### 3. **Application deployment**
 
-After 1 and 2 steps, we are ready to deploy application. To do that, some changes should be pushed should be done either to **/iac/app_iac** or **app**. It shall trigger **application_build_push_deploy** workflow. As code currently has hard dependency on Redis cluster endpoint, we can change it durectly in **app/src/app.ts**. It:
+After 1 and 2 steps, we are ready to deploy application. To do that, some changes should be pushed should be done either to **/iac/app_iac** or **app**. It shall trigger **application_build_push_deploy** workflow. As code currently has hard dependency on Redis cluster endpoint, we can change it directly in **app/src/app.ts**. It:
 1. Runs npm tests.
 2. Defines current version of application and bumps it according to the semantic rules.
 3. Builds application image with new version and pushes it to ECR.
