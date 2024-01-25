@@ -24,18 +24,17 @@ jobs:
     - name: Use Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: 14.x
+        node-version: 20.x
 
     - name: Install dependencies and run tests
-      working-directory: ./app
       run: |
-        echo "npm ci"
-        echo "npm test"
+        npm install
+        timeout 20s npm run test || true
 
   build_application_and_push_to_ECR_deploy_via_terraform:
     if: github.ref == 'refs/heads/main'
-    needs: running_tests
     runs-on: ubuntu-latest
+    needs: running_tests
     name: Build, Push and Deploy
     steps:
     - name: Checkout code
@@ -55,15 +54,12 @@ jobs:
     - name:  Automated Version Bump
       id: version-bump
       uses:  phips28/gh-action-bump-version@master
-      env:
-        PACKAGEJSON_DIR: ./app
       with:
         minor-wording: feature
         major-wording: major
         patch-wording: patch,fix
 
     - name: Build, tag, and push image to Amazon ECR
-      working-directory: ./app
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}

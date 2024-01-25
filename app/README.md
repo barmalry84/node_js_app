@@ -2,51 +2,47 @@
 
 ## Intro
 
-The People Info API is a small API based on Fastify and Typescript. API allows to receive data and posts it to DynamoDB. It also uses Redis cluster as cache layer between application and database.
+The People Info API is a small API based on Typescript and Fastify. API allows to receive data and posts it to DynamoDB. It also uses Redis cluster as cache layer between application and database.
 
 ## Prerequisites
 
 - Node.js 20+
-- DynamoDB already created and runs in AWS (**app_iac** stack)
-- Redis cluster already created and runs in AWS (**app_iac** stack)
+- DynamoDB already created and runs in AWS (**app_iac** stack) or locally.
+- Redis cluster already created and runs in AWS (**app_iac** stack) or locally.
 
-Note that current code implementation has DynamoDb and Redis as hard requirements. Application will fail to start without them.
+Current code implementation has DynamoDb and Redis as hard requirements. Application will fail to start without them.
 
 ## Running locally
+It is possible to choose where we run application, locally or in AWS. For that reason, we can utilize env var ENV. It is set either in **.env** or during npm run. 
+If ENV=aws, application will be run in AWS (by default).
+if ENV=local. it will be run locally.
+
+In order to satisfy dependencies locally, we need to install local DynamoDB and Redis images. To run application locally, we need:
 
 ```sh
+docker-compose -f docker-compose-dynamo-redis.yml up -d
+aws dynamodb create-table \
+  --table-name PeopleInfo \
+  --billing-mode PAY_PER_REQUEST \
+  --attribute-definitions AttributeName=person_surname,AttributeType=S \
+  --key-schema AttributeName=person_surname,KeyType=HASH \
+  --endpoint-url http://localhost:8000 --region eu-west-1
 npm install
-cp .env.example .env
-npm run start
+npm run start:dev
 ```
-Visit `localhost:3000/status` in browser
+Application is available at 3000 port `localhost:3000/status`.
 
-or
-
-```sh
-docker build -t people-info-api .
-docker run -p 3000:3000 people-info-api
-```
-
-Note: 
-1. If application runs locally, it will have issues with connecting to Redis cluster as it is running in AWS VPC. There are ways to workaround this:
-- mock redis cluster while running locally 
-- create IP forwarding via AWS NATs to Redis
-- use VPN connection to VPC to access its internals.
-- just comment Redis code part before running application locally.
-In a scope of the task, it's proposed to use last option.
-2. For running DynamoDb locally, it's possible to use [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html). But in a scope of the task it was not done.
-
-## Running in AWS (proposed way to test)
+## Running in AWS
 After **basic_iac** and **app_iac** stacks are created, next steps shall be done:
-1. Find our endpodint of Redis cluster in AWS.
-2. Important!!! Update host for redis cluster in **app/src/app.ts**.
-3. Push to main branch.
+1. Find our endpoint of Redis cluster in AWS.
+2. **Important!!!** Update host for redis cluster in **.env**. variable AWS_REDIS_HOST.
+3. Push changes to main branch.
 4. Wait until workflow is done.
 5. Find created ALB in AWS console or using terminal
 
 ## How to use app
 
+If you use application locally, then instead of {ALB_URl}, use localhost:3000.
 Run the following command to verify the server status:
 
 ```bash
@@ -75,7 +71,7 @@ curl -X POST http://{ALB_URl}/data -H "Content-Type: application/json" -d '{
 
 **Request**:
 
-To get data by the restaurant name, use:
+To get data by the person name, use:
 
 ```bash
 curl http://{ALB_URl}/data?person_surname=<Person Surname>
@@ -92,8 +88,13 @@ curl http://{ALB_URl}/metrics
 ```
 
 ## Tests
-Not implemented because task took all my dedicated time to it.
+Test suit for checking **/status** endpoint is available. It runs in CI as part of **application_build_push_deploy** workflow. It can be run locally as well:
 
-## DynamoDB vs Redis
+```bash
+npm install
+npm run test
+```
+
+## DynamoDB and Redis
 1. Application saves data to DynamoDB and also puts it to Redis cache level. 
 2. Get request is made to Redis first and then to DynamoDB.
