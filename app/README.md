@@ -14,8 +14,7 @@ Current code implementation has DynamoDb and Redis as hard requirements. Applica
 
 ## Running locally
 It is possible to choose where we run application, locally or in AWS. For that reason, we can utilize env var ENV. It is set either in **.env** or during npm run. 
-If ENV=aws, application will be run in AWS (by default).
-if ENV=local. it will be run locally.
+If ENV=aws, application will be run in AWS (by default). If ENV=local, it will be run locally.
 
 In order to satisfy dependencies locally, we need to install local DynamoDB and Redis images. To run application locally, we need:
 
@@ -34,7 +33,7 @@ Application is available at 3000 port `localhost:3000/status`.
 
 ## Running in AWS
 After **basic_iac** and **app_iac** stacks are created, next steps shall be done:
-1. Find our endpoint of Redis cluster in AWS.
+1. Find out endpoint of Redis cluster in AWS.
 2. **Important!!!** Update host for redis cluster in **.env**. variable AWS_REDIS_HOST.
 3. Push changes to main branch.
 4. Wait until workflow is done.
@@ -43,6 +42,9 @@ After **basic_iac** and **app_iac** stacks are created, next steps shall be done
 ## How to use app
 
 If you use application locally, then instead of {ALB_URl}, use localhost:3000.
+
+#### 1. Status Endpoint
+
 Run the following command to verify the server status:
 
 ```bash
@@ -80,7 +82,7 @@ curl http://{ALB_URl}/data?person_surname=<Person Surname>
 Replace `<Person Surname>` with the actual name of the person you wish to query.
 
 **Expected**: JSON response containing the details related to the specified person.
-s
+
 #### 4. Retrieve Prometheus client metrics
 
 ```bash
